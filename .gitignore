@@ -1,0 +1,14 @@
+.gradle/
+**/build/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+*.task
+*.gguf
+*.litertlm
+.env
+users.json
+server/config/
+__pycache__/

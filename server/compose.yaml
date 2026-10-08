@@ -1,0 +1,40 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - models:/root/.ollama
+    # Intentionally no public ports; only the gateway can call this service.
+  gateway:
+    build: .
+    restart: unless-stopped
+    environment:
+      KUN_UPSTREAM: http://ollama:11434/v1
+      KUN_MODEL: ${KUN_MODEL:-gemma3:1b}
+      KUN_RPM: 10
+      KUN_CONCURRENCY: 2
+    volumes:
+      - ./config:/config:ro
+    depends_on:
+      - ollama
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  https:
+    image: caddy:2
+    restart: unless-stopped
+    environment:
+      KUN_DOMAIN: ${KUN_DOMAIN:?Set KUN_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - gateway
+volumes:
+  models:
+  caddy_data:
+  caddy_config:

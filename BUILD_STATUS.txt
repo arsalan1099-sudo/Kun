@@ -1,0 +1,8 @@
+KUN Hybrid 0.2 — source update
+Backend: 9/9 tests passed against a local mock HTTP inference server.
+Android: NOT compiled in this session (javac and Android SDK unavailable).
+APK: NOT included. GitHub Actions build workflow included but NOT run.
+Docker/Caddy: configuration supplied, NOT started or verified in Docker.
+Real model inference and Redmi Note 12 Pro testing: NOT performed.
+Public server: NOT provisioned or deployed.
+No unlimited capacity guarantee; no model weights or secrets included.

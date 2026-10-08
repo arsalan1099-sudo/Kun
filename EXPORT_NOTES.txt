@@ -1,0 +1,6 @@
+Updated from the user's KUN-Complete-Android-Project.zip (version 0.1).
+Version 0.2 adds explicit Server mode, HTTPS client, session-only user tokens,
+self-hosted Ollama gateway, manual user provisioning, Docker/Caddy configuration,
+backend tests and an Android debug APK workflow. Local MediaPipe code retained.
+See README.md and server/README.md for prerequisites and verification limits.
+This export replaces old 0.1 build-status claims; no 0.2 APK has been built.
