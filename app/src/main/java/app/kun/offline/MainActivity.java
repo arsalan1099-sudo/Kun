@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
   scroll=new ScrollView(this);scroll.setFillViewport(true);chat=new LinearLayout(this);chat.setOrientation(1);chat.setPadding(0,dp(16),0,dp(16));scroll.addView(chat);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   input=new EditText(this);input.setTextColor(INK);input.setHintTextColor(Color.LTGRAY);input.setHint("اپنا سوال لکھیں…");input.setTextSize(18);input.setMinLines(2);input.setMaxLines(5);input.setGravity(Gravity.TOP|Gravity.START);input.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);input.setInputType( android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);input.setBackground(box(PANEL,18));input.setPadding(dp(14),dp(12),dp(14),dp(12));root.addView(input,new LinearLayout.LayoutParams(-1,-2));
   send=button("بھیجیں");send.setBackground(box(LIME,16));send.setTextColor(BG);LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,dp(52));sp.topMargin=dp(10);root.addView(send,sp);send.setOnClickListener(v->generate());
-  loadHistory();render();setBusy(false);
+  loadHistory();render();setBusy(false);showLastExit();
   File recovery=new File(getFilesDir(),"previous.task");if(!modelFile().exists()&&recovery.exists())recovery.renameTo(modelFile());
   if(modelFile().exists()){setBusy(true);status.setText("Model کھل رہا ہے…");worker.execute(()->{try{engine=openModel(modelFile());ui(()->status.setText("OFFLINE • Model تیار ہے"));}catch(Throwable e){ui(()->status.setText("Model نہیں کھلا۔ مدد دیکھیں یا دوسرا model لوڈ کریں۔"));}finally{ui(()->setBusy(false));}});}
  }
@@ -78,11 +78,34 @@ public class MainActivity extends Activity {
   worker.execute(()->{try{
    String answer;
    if(remote){answer=RemoteClient.generate(base,key,history,q);}
-   else {int start=Math.max(0,history.length()-8);if(start%2!=0)start++;String p=prompt(q,start);while(engine.sizeInTokens(p)>1400&&start<history.length()){start=Math.min(history.length(),start+2);p=prompt(q,start);}if(engine.sizeInTokens(p)>1400)throw new IllegalArgumentException("سوال بہت طویل ہے؛ مختصر کریں۔");answer=engine.generateResponse(p);}
+   else {getPreferences(0).edit().putString("crashStage","Token counting").commit();int start=Math.max(0,history.length()-8);if(start%2!=0)start++;String p=prompt(q,start);while(engine.sizeInTokens(p)>1400&&start<history.length()){start=Math.min(history.length(),start+2);p=prompt(q,start);}if(engine.sizeInTokens(p)>1400)throw new IllegalArgumentException("سوال بہت طویل ہے؛ مختصر کریں۔");getPreferences(0).edit().putString("crashStage","Generating response").commit();answer=engine.generateResponse(p);}
    if(answer==null||answer.trim().isEmpty())throw new IOException("خالی جواب؛ دوبارہ کوشش کریں۔");
    final String result=answer;ui(()->{append("user",q);append("model",result);input.setText("");saveHistory();render();status.setText(remote?"SERVER • جواب تیار ہے":"LOCAL • جواب تیار ہے");});
   }catch(Throwable e){ui(()->{status.setText("جواب مکمل نہیں ہوا۔ سوال محفوظ ہے۔");new AlertDialog.Builder(this).setTitle("دوبارہ کوشش کریں").setMessage(safeError(e)).setPositiveButton("ٹھیک ہے",null).show();});}finally{ui(()->setBusy(false));}});
  }
+
+ private void showLastExit(){
+  try{
+   ActivityManager am=(ActivityManager)getSystemService(ACTIVITY_SERVICE);
+   java.util.List<ApplicationExitInfo> exits=am.getHistoricalProcessExitReasons(null,0,1);
+   if(exits.isEmpty())return;
+   ApplicationExitInfo e=exits.get(0);
+   int r=e.getReason();
+   String reason;
+   switch(r){
+    case ApplicationExitInfo.REASON_CRASH_NATIVE: reason="Native engine crash";break;
+    case ApplicationExitInfo.REASON_LOW_MEMORY: reason="Android: low memory";break;
+    case ApplicationExitInfo.REASON_CRASH: reason="Java crash";break;
+    case ApplicationExitInfo.REASON_ANR: reason="App not responding";break;
+    default: reason="Android exit reason: "+r;
+   }
+   String stage=getPreferences(0).getString("crashStage","Not recorded");
+   new AlertDialog.Builder(this).setTitle("KUN diagnostics")
+    .setMessage(reason+"\nStage: "+stage+"\nDetails: "+e.getDescription())
+    .setPositiveButton("OK",null).show();
+  }catch(Exception ignored){}
+ }
+
  private String safeError(Throwable e){String m=e.getMessage();return m==null?e.getClass().getSimpleName():m.substring(0,Math.min(m.length(),350));}
  @Override protected void onActivityResult(int req,int res,Intent data){super.onActivityResult(req,res,data);if(req!=10||res!=RESULT_OK||data==null||data.getData()==null)return;Uri uri=data.getData();setBusy(true);status.setText("Model فائل نقل ہو رہی ہے…");worker.execute(()->{File tmp=new File(getFilesDir(),"import.task"),backup=new File(getFilesDir(),"previous.task");boolean moved=false, installedNew=false;try{
   try(InputStream in=getContentResolver().openInputStream(uri);FileOutputStream out=new FileOutputStream(tmp)){if(in==null)throw new IOException("فائل نہیں کھلی");byte[] buffer=new byte[1024*1024];long total=0;int count;while((count=in.read(buffer))!=-1){total+=count;if(total>4L*1024*1024*1024)throw new IOException("4GB سے چھوٹا model منتخب کریں۔");out.write(buffer,0,count);}out.getFD().sync();if(total<1024*1024)throw new IOException("یہ model فائل نہیں لگتی۔");}
