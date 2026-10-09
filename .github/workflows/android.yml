@@ -14,6 +14,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Test KUN Java model runtime
+        run: |
+          mkdir -p /tmp/kun-model-tests
+          javac -d /tmp/kun-model-tests app/src/main/java/app/kun/offline/KunModel.java tests/KunModelTest.java
+          java -cp /tmp/kun-model-tests KunModelTest tests/python-parity.bin
       - uses: android-actions/setup-android@v4
       - uses: gradle/actions/setup-gradle@v4
       - run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
@@ -22,3 +27,4 @@ jobs:
         with:
           name: KUN-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
