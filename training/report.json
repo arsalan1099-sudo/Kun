@@ -1,0 +1,64 @@
+{
+  "model": "KUN task router v1",
+  "kind": "TF-IDF + multiclass logistic regression; not LLM fine-tuning",
+  "train_examples": 200,
+  "heldout_examples": 40,
+  "synthetic_dataset": true,
+  "seed": 42,
+  "features": 2369,
+  "classes": [
+    "architecture",
+    "business",
+    "coding",
+    "general",
+    "writing"
+  ],
+  "raw_accuracy": 0.975,
+  "with_abstention_accuracy": 0.925,
+  "confusion_matrix": [
+    [
+      7,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      8,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      8,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      8,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      8
+    ]
+  ],
+  "limitations": [
+    "Small synthetic authored test set; not an independent benchmark.",
+    "Intent classification only; does not measure answer quality or general intelligence.",
+    "No chat-model weight updates."
+  ],
+  "sklearn_version": "1.8.0",
+  "python_version": "3.12.14",
+  "train_sha256": "d4cbb523978ed205532aae7e764a8faf14d4b2cd5cb35f1734fe23f546c7d0a0",
+  "eval_sha256": "743216edc45c48af520dd0d47b58fa4932bd91c7567244f995870a023670a43c"
+}

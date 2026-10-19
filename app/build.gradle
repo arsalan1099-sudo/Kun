@@ -2,7 +2,8 @@ plugins { id 'com.android.application' }
 android {
  namespace 'app.kun.offline'
  compileSdk 35
- defaultConfig { applicationId 'app.kun.offline'; minSdk 31; targetSdk 34; versionCode 4; versionName '0.4.0' }
+ defaultConfig { applicationId 'app.kun.offline'; minSdk 31; targetSdk 34; versionCode 6; versionName '0.6.0' }
+ buildTypes { debug { applicationIdSuffix ".preview"; resValue "string", "app_name", "KUN Preview" }; release { resValue "string", "app_name", "KUN" } }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
 dependencies { }

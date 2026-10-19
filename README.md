@@ -1,3 +1,7 @@
+# Current preview: KUN 0.6
+
+See [KUN 0.6 Smart Preview](KUN-0.6-SMART.md) for trained task routing, correction memory, limitations and tests. Real generated answers use your own PC via Ollama; [setup guide](KUN-0.5-SETUP.md). The material below describes earlier versions.
+
 # KUN Hybrid 0.2 — Android + self-hosted AI gateway
 
 KUN now has two explicitly selected modes:
