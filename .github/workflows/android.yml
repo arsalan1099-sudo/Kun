@@ -1,6 +1,7 @@
 name: Build KUN debug APK
 on:
   workflow_dispatch:
+  pull_request:
   push:
     branches: [main]
 jobs:
@@ -19,6 +20,15 @@ jobs:
           mkdir -p /tmp/kun-model-tests
           javac -d /tmp/kun-model-tests app/src/main/java/app/kun/offline/KunModel.java tests/KunModelTest.java
           java -cp /tmp/kun-model-tests KunModelTest tests/python-parity.bin
+      - name: Test Ollama client contract
+        run: |
+          curl --fail --location --output /tmp/kun-json.jar https://repo.maven.apache.org/maven2/org/json/json/20240303/json-20240303.jar
+          javac -cp /tmp/kun-json.jar -d /tmp/kun-model-tests app/src/main/java/app/kun/offline/OllamaClient.java app/src/main/java/app/kun/offline/SmartPrompt.java tests/OllamaClientTest.java
+          java -cp /tmp/kun-model-tests:/tmp/kun-json.jar app.kun.offline.OllamaClientTest
+      - name: Verify trained router and correction memory
+        run: |
+          javac -cp /tmp/kun-json.jar -d /tmp/kun-model-tests app/src/main/java/app/kun/offline/TaskRouter.java app/src/main/java/app/kun/offline/MemoryBank.java app/src/main/java/app/kun/offline/SmartPrompt.java tests/SmartFeaturesTest.java
+          java -cp /tmp/kun-model-tests:/tmp/kun-json.jar app.kun.offline.SmartFeaturesTest app/src/main/assets/task-router.json tests/router-fixtures.json
       - uses: android-actions/setup-android@v4
       - uses: gradle/actions/setup-gradle@v4
       - run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
